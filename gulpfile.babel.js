@@ -8,6 +8,8 @@ import {stream as wiredep} from 'wiredep';
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
 
+var concat = require('gulp-concat');
+
 gulp.task('styles', () => {
   return gulp.src('app/styles/*.scss')
     .pipe($.plumber())
@@ -23,11 +25,29 @@ gulp.task('styles', () => {
     .pipe(reload({stream: true}));
 });
 
-gulp.task('scripts', () => {
-  return gulp.src('app/scripts/**/*.js')
+gulp.task('scripts-react', () => {
+  return gulp.src([
+    'app/scripts/react_components/!(lifecoach)*.js', // all files that end in .js EXCEPT lifecoach*.js
+    'app/scripts/react_components/lifecoach.js',
+  ])
     .pipe($.plumber())
     .pipe($.sourcemaps.init())
-    .pipe($.babel())
+    .pipe($.babel({
+      presets: ['react', 'es2015']
+    }))
+    .pipe(concat("react-compiled.js"))
+    .pipe($.sourcemaps.write('.'))
+    .pipe(gulp.dest('app/scripts/react_build'))
+    .pipe(reload({stream: true}));
+});
+
+gulp.task('scripts', ['scripts-react'], () => {
+  return gulp.src(['app/scripts/**/*.js', '!app/scripts/react_components/*.js'])
+    .pipe($.plumber())
+    .pipe($.sourcemaps.init())
+    .pipe($.babel({
+      presets: ['react', 'es2015']
+    }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('.tmp/scripts'))
     .pipe(reload({stream: true}));
