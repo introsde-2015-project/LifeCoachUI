@@ -8,16 +8,15 @@ var Header = React.createClass({
   },
   render: function() {
     return (
-      <div className="header">
-        <ul className="nav nav-pills pull-right">
-          {this.props.personId != null ? <li><span className="glyphicon glyphicon-user" onClick={this.skipStatsSet}></span></li> : null}
-          {this.props.personId != null ? <li><span className="glyphicon glyphicon-log-out" onClick={this.resetPerson}></span></li> : null}
-          <li><span className="glyphicon glyphicon-question-sign"></span></li>
-        </ul>
-        <h3>LifeCoach</h3>
-      </div>
-
-      
+      <nav>
+        <div className="nav-wrapper">
+          <div className="brand-logo left" onClick={this.resetPerson}><a href="#">LifeCoach</a></div>
+          <ul className="right">
+            {this.props.personId != null ? <li onClick={this.skipStatsSet}><a><i className="material-icons">account_circle</i></a></li> : null}
+            <li><a><i className="material-icons">help</i></a></li>
+          </ul>
+        </div>
+      </nav>
     );
   }
 });

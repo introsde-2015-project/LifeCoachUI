@@ -3,13 +3,12 @@ var DailyStats = React.createClass({
       return {
         sleep: false,
         calories: false,
-        steps: false,
-        timeline: []
+        steps: false
       }
     },
     componentDidUpdate: function() {
       if (this.state.sleep != false && this.state.calories != false && this.state.steps != false) {
-        this.props.callback(true, this.state.timeline);
+        this.props.callback(true);
       }
     },
     createNewMeasure: function(value) {
@@ -30,10 +29,8 @@ var DailyStats = React.createClass({
           contentType:"application/json; charset=utf-8",
           dataType:"json",
           success: function(data){
-            timeline.push(data);
             self.setState({
-              [stat]: value,
-              timeline: timeline
+              [stat]: value
             });
           }
         })
@@ -56,7 +53,7 @@ var DailyStats = React.createClass({
       }
         return (
             <div className="dailyStats">
-              <h3>Tell me about your day!</h3>
+              <h3 className="statsHeading">Tell me about your day!</h3>
               {statsForm}
             </div>
         );
@@ -84,16 +81,23 @@ var StatsForm = React.createClass({
         statValue: event.target.value
       });
     },
+    handleKeyDown: function(event) {
+      if (event.key === 'Enter') {
+        this.setValue();
+      }
+    },
     setValue: function() {
       this.props.callback(this.state.statValue);
     },
     render: function () {
         return (
-            <div>
+            <div className="statsForm">
               <h4>{this.props.question}</h4>
-              <input type="number" value={this.state.statValue} onChange={this.onValueChange}/>
-              <button onClick={this.setValue}>OK</button>
-              <div onClick={this.setValue}>Skip</div>
+              <div className="input-field col s6">
+                <input type="number" value={this.state.statValue} onChange={this.onValueChange} onKeyDown={this.handleKeyDown}/>
+              </div>
+              <a className="waves-effect waves-light btn" onClick={this.setValue}>OK</a>
+              <a className="skip-btn btn-flat" onClick={this.setValue}>Skip</a>
             </div>
         );
     } 

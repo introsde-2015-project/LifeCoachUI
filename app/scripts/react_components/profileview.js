@@ -4,10 +4,8 @@ var ProfileView = React.createClass({
         activeTab: "timeline"
       }
     },
-    componentDidUpdate: function() {
-      if (this.state.statsSet) {
-        this.props.callback(true);
-      }
+    componentDidMount: function() {
+        $('ul.tabs').tabs();
     },
     changeTab: function(tabName) {
       this.setState({
@@ -16,25 +14,26 @@ var ProfileView = React.createClass({
     },
     render: function () {
       return (
-        <div>
-            <ul className="nav nav-pills nav-justified" role="tablist">
-              <li role="presentation" className="active" onClick={this.changeTab.bind(this, "timeline")}><a href="#timeline" role="tab" data-toggle="tab">TIMELINE</a></li>
-              <li role="presentation" onClick={this.changeTab.bind(this, "stats")}><a href="#stats" role="tab" data-toggle="tab">STATISTICS</a></li>
-              <li role="presentation" onClick={this.changeTab.bind(this, "goals")}><a href="#goals" role="tab" data-toggle="tab">GOALS</a></li>
+        <div className="row">
+          <div className="col s12">
+            <ul className="tabs">
+              <li className="active tab col s4"><a href="#timeline" onClick={this.changeTab.bind(this, "timeline")}>TIMELINE</a></li>
+              <li className="tab col s4"><a href="#stats" onClick={this.changeTab.bind(this, "stats")}>STATISTICS</a></li>
+              <li className="tab col s4"><a href="#goals" onClick={this.changeTab.bind(this, "goals")}>GOALS</a></li>
             </ul>
-            {/*Wrapper for all dynamically changing tab content, each navigation link has it's own tab content*/}
-            <div className="tab-content">
-              <div role="tabpanel" className="tab-pane active" id="timeline">
-                <TimelineView personId={this.props.personId} timeline={this.props.timeline}/>
-              </div>
-              <div role="tabpanel" className="tab-pane" id="stats">
-                <StatsView personId={this.props.personId}/>
-              </div>
-              <div role="tabpanel" className="tab-pane" id="goals">
-                <GoalsView personId={this.props.personId}/>
-              </div>
+          </div>
+          <div className="tab-container">
+            <div id="timeline" className="col s12">
+              <TimelineView personId={this.props.personId}/>
             </div>
-        </div> 
+            <div id="stats" className="col s12">
+              <StatsView personId={this.props.personId}/>
+            </div>
+            <div id="goals" className="col s12">
+              <GoalsView personId={this.props.personId}/>
+            </div>
+          </div>
+        </div>
       );
     }
 });

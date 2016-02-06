@@ -5,8 +5,7 @@ var LifeCoach = React.createClass({
     return {
       personId: null,
       dailyStatsSet: false,
-      personsData: [],
-      timeline: []
+      personsData: []
     }
   },
   componentWillMount: function() {
@@ -26,7 +25,6 @@ var LifeCoach = React.createClass({
     });
   },
   loadPersonsData: function() {
-    // Start spinner
     var self = this;
     var lifecoachPersons = logicBaseUrl + "persons";
     $.getJSON(lifecoachPersons, function(data) {
@@ -37,17 +35,16 @@ var LifeCoach = React.createClass({
       console.error("Cannot load persons data");
     });
   },
-  dailyStatsSet: function(statsSet, timeline) {
+  dailyStatsSet: function(statsSet) {
     this.setState({
-      dailyStatsSet: statsSet,
-      timeline: timeline
+      dailyStatsSet: statsSet
     });
   },
   // Render function
   render: function() {
     var mainView;
     var personId = this.state.personId
-    var header = <Header personId={personId} resetPerson={this.setPersonId.bind(this,null)} skipStatsSet={this.dailyStatsSet.bind(this,true,[])}/>
+    var header = <Header personId={personId} resetPerson={this.setPersonId.bind(this,null)} skipStatsSet={this.dailyStatsSet.bind(this,true)}/>
     if (!this.state.personsData) {
       return (
         <div></div>
@@ -58,7 +55,7 @@ var LifeCoach = React.createClass({
     } else if (!this.state.dailyStatsSet){
       mainView = <DailyStats personId={this.state.personId} callback={this.dailyStatsSet}/>
     } else {
-      mainView = <div><ProfileView personId={this.state.personId} timeline={this.state.timeline}/></div>
+      mainView = <div><ProfileView personId={this.state.personId}/></div>
     }
     return (
       <div>

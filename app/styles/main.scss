@@ -1,8 +1,210 @@
 $icon-font-path: '../fonts/';
 
 // bower:scss
-@import "bower_components/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
+//@import "bower_components/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
+@import "bower_components/Materialize/sass/materialize.scss";
 // endbower
+
+html, body{
+  height: 100%;
+}
+
+body {
+  background: #f5f2f0;
+}
+
+.container {
+  background: #fff;
+}
+
+.tab-container {
+  padding-top: 20px;
+  overflow: auto;
+  width: 80%;
+  margin: auto;
+}
+
+@media #{$medium-and-down} {
+  .tab-container {
+    width: 90%;
+  }
+}
+
+nav {
+  padding: 0px 10px;
+  //background: color("cyan", "lighten-1");
+}
+
+nav.sub-nav {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+nav.sub-nav .brand-logo {
+  color: #000;
+}
+
+nav.sub-nav .btn-floating i {
+  line-height: 37px;
+}
+
+.profileSelect {
+  padding: 0px 20px;
+}
+
+.profileSelect .card-panel {
+  padding: 0;
+}
+
+.dailyStats .statsHeading {
+  font-weight: 200;
+}
+
+.statsForm {
+  width: 70%;
+  margin: auto;
+  padding-top: 30px;
+}
+
+.statsForm .skip-btn {
+  color: #aaa;
+  padding-top: 10px;
+  display: block;
+}
+
+.statsForm input {
+  text-align: center;
+}
+
+.collection .collection-item:not(.active):hover {
+    background-color: #eee;//color("cyan", "lighten-2");
+}
+
+.statsView .collapsible-header p {
+  margin: 0;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+.statsView .collapsible-header .btn-floating {
+  float: right;
+  margin-top: 3px;
+}
+
+.statsView .collapsible-header .btn-floating i {
+  line-height: inherit;
+  width: inherit;
+}
+
+.card .card-top {
+
+  display: block;
+  min-height: 3rem;
+  line-height: 3rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid #ddd;
+  color: #999;
+
+  .top-left {
+    display: inline-block;
+  }
+
+  .top-right {
+    float: right;
+  }
+
+  i {
+    font-size: 1.6rem;
+    line-height: 3rem;
+    float: left;
+    margin-right: 1rem;
+  }
+
+  i.red-icon {
+    color: red;
+  }
+
+  i.green-icon {
+    color: green;
+  }
+  
+  .measure {
+    text-transform: capitalize;
+  }
+
+}
+
+.card .card-music .col {
+  text-align: center;
+}
+
+.card .card-music p:first-child {
+  margin-top: 0;
+}
+
+.card .card-body  {
+  padding: 10px;
+
+  .card-header {
+    padding: 0 1rem;
+    text-align: center;
+    font-size: 24px;
+
+}
+
+  .card-image {
+    margin: 10px -10px 0 -10px;
+  }
+
+  .card-content {
+    overflow: auto;
+
+    ul li {
+      list-style-type: initial;
+      margin: 0 30px;
+    }
+
+    blockquote {
+      font-style: italic;
+      margin: 0;
+    }
+
+    p {
+      margin: 1em 0;
+    }
+
+    p:first-child {
+      margin-top: 0;
+    }
+
+  }
+}
+
+.modal .measureOption, .modal .goalOption {
+  text-transform: capitalize;
+}
+
+.modal .modalBtnContainer {
+  text-align: center;
+  padding: 10px;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
 
 .panel .panel-heading {
   text-transform: capitalize;

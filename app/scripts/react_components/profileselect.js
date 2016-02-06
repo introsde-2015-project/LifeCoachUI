@@ -10,27 +10,21 @@ var ProfileSelect = React.createClass({
       var self = this;
       var personProfiles = this.props.personsData.map(function(person, personIndex) {
         return (
-          <button key={personIndex} type="button" className="list-group-item" onClick={this.selectPerson.bind(this, person.idPerson)}>
-            <div className="media">
-              <div className="media-left">
-                <a href="#">
-                  <img className="media-object" src="" alt="..."/>
-                </a>
-              </div>
-              <div className="media-body">
-                <h4 className="media-heading">{person.firstname + " " + person.lastname} </h4>
-                Birthdate: {person.birthdate}
-              </div>
-            </div>
-          </button>
+         <li key={personIndex} className="collection-item avatar" onClick={this.selectPerson.bind(this, person.idPerson)}>
+            <img src="" alt="" className="circle"/>
+            <span className="title">{person.firstname + " " + person.lastname}</span>
+            <p>Birthdate: {person.birthdate}</p>
+          </li>
         );
       }, this);
 
       return (
           <div className="profileSelect">
             <h3>Choose your profile</h3>
-            <div className="list-group">
-              {personProfiles}
+            <div className="card-panel">
+              <ul className="collection">
+                {personProfiles}
+              </ul>
             </div>
           </div>
       );

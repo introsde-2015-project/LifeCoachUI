@@ -1,11 +1,22 @@
 var StatsView = React.createClass({
     getInitialState: function () {  
       return {
+        dataInit: false,
+        measureTypes: [],
         measuresData: {}
       }
     },
-    componentWillMount: function() {
-      this.loadMeasureData();
+    componentWillReceiveProps: function(nextProps) {
+      if (!this.state.dataInit) {
+        this.loadMeasureData();
+      }
+    },
+    componentDidUpdate: function() {
+    },
+    setDataInit: function(dataInit) {
+      this.setState({
+        dataInit: dataInit
+      });
     },
     loadMeasureData: function() {
       var self = this;
@@ -25,7 +36,12 @@ var StatsView = React.createClass({
                     count++;
                     if (count == measureTypes.length) {
                       self.setState({
-                        measuresData: measureJsonArray
+                        measureTypes: measureTypes,
+                        measuresData: measureJsonArray,
+                        dataInit: true
+                      }, function() {
+                        $('.collapsible').collapsible();
+                        $('.modal-trigger').leanModal();
                       });
                     }
                 }
@@ -33,10 +49,13 @@ var StatsView = React.createClass({
         }
       });  
     },
-    componentDidUpdate: function() {
+    openModal: function() {
+      $('#measureModal').openModal();
     },
     render: function () {
+      var modal = this.state.modalOn;
       var measuresData = this.state.measuresData;
+      var measureTypes = this.state.measureTypes;
       var initMeasuresData = Object.keys(measuresData).length > 0;
       if (!initMeasuresData) {
         return (
@@ -57,34 +76,41 @@ var StatsView = React.createClass({
         })
 
         return (
-          <div key={measureName} className="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-            <div className="panel panel-default">
-              <div className="panel-heading">{measureName}</div>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Value</th>
-                    <th>Date</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {measureRows}
-                  <tr>
-                    <td colSpan="3"><button className="btn btn-success">Add measure</button></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+            <li key={measureName}>
+              <div className="collapsible-header">
+                <i className="material-icons">filter_drama</i><p>{measureName}</p>
+                {/*<a className="btn-floating waves-effect waves-light"><i className="material-icons">add</i></a>*/}
+              </div>
+              <div className="collapsible-body">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Value</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {measureRows}
+                  </tbody>
+                </table>
+              </div>
+            </li>
         )
       })
-
       return (
-        <div>
-            <div className="row">
-              {measureTables}
+        <div className="statsView">
+          <nav className="sub-nav">
+            <div className="nav-wrapper">
+              <div className="brand-logo left">Your current statistics</div>
+              <ul className="right">
+                <li><a onClick={this.openModal} className="btn-floating waves-effect waves-light"><i className="material-icons">add</i></a></li>
+              </ul>
             </div>
+          </nav>
+          <ul className="collapsible" data-collapsible="expandable">
+            {measureTables}
+          </ul>
+          <MeasureModal personId={this.props.personId} cbDataInit={this.setDataInit} measureTypes={measureTypes}/>
         </div> 
       );
     }
