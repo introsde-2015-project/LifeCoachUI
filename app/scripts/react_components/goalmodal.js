@@ -1,23 +1,9 @@
 var GoalModal = React.createClass({
 	 getInitialState: function () {  
       return {
-        goalTypes: [],
         goalType: "",
         goalValue: ""
       }
-    },
-    componentDidMount: function() {
-      this.loadGoalTypes();
-    },
-    loadGoalTypes: function() {
-      var self = this;
-      var goalTypesUrl = logicBaseUrl + "goaltypes";
-      $.getJSON(goalTypesUrl, function(goalTypes) {
-      	console.log(goalTypes);
-        self.setState({
-          goalTypes: goalTypes
-        });
-      });
     },
     onGoalTypeChange: function(event) {
 	this.setState({
@@ -48,7 +34,7 @@ var GoalModal = React.createClass({
 	      dataType:"json",
 	      success: function(data){
 	      	$('#goalModal').closeModal();
-	        self.props.cbDataInit(false);
+	        self.props.cbLoadData();
 	      },
 	      fail: function() {
 	      	$('#goalModal').closeModal();
@@ -59,7 +45,7 @@ var GoalModal = React.createClass({
     	$('#goalModal').closeModal();
     },
 	render: function () {
-		var goalTypes = this.state.goalTypes;
+		var goalTypes = this.props.goalTypes;
 
 		var goalOptions = $.map(goalTypes, function(goalType, index) {
 			return (

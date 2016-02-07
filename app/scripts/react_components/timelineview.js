@@ -1,23 +1,9 @@
 var TimelineView = React.createClass({
     getInitialState: function () {  
-      return {
-        timelineData: {}
-      }
-    },
-    componentWillMount: function() {
-      this.loadTimelineData();
-    },
-    loadTimelineData: function() {
-      var self = this;
-      var timelinesUrl = logicBaseUrl + "persons/" + this.props.personId + "/timelines";
-      $.getJSON(timelinesUrl, function(timelines) {
-        self.setState({
-          timelineData: timelines
-        });
-      });
+      return null;
     },
     render: function () {
-      var timelineData = this.state.timelineData;
+      var timelineData = this.props.timelineData;
       var initTimelineData = Object.keys(timelineData).length > 0;
       if (!initTimelineData) {
         return (
@@ -38,7 +24,6 @@ var TimelineView = React.createClass({
             timelineCard = <Recipe recipe={timelineObj}/>
           }
 
-
         return (
           <div className="row" key={index}>
             <div className="col s12 m12">
@@ -51,7 +36,7 @@ var TimelineView = React.createClass({
                     {goalReached ? "Reached" : "Didn't reach"} goal: 
                     <span className="measure"> {measureType}</span>
                   </div>
-                  <div className="top-right">{item.created}</div>
+                  <div className="top-right">{item.date}</div>
                 </div>
                 {timelineCard}
               </div>
@@ -73,6 +58,10 @@ var TimelineView = React.createClass({
       );
     }
 });
+
+
+
+
 
 var Joke = React.createClass({
     render: function () {

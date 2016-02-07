@@ -1,34 +1,9 @@
 var GoalsView = React.createClass({
     getInitialState: function () {  
-      return {
-        dataInit: false,
-        goalData: {}
-      }
+      return null;
     },
     componentDidMount: function() {
       //this.loadGoalData();
-    },
-    componentWillReceiveProps: function(nextProps) {
-      if (!this.state.dataInit) {
-        this.loadGoalData();
-      }
-    },
-    setDataInit: function(dataInit) {
-      this.setState({
-        dataInit: dataInit
-      });
-    },
-    loadGoalData: function() {
-      var self = this;
-      var goalsUrl = logicBaseUrl + "persons/" + this.props.personId + "/goals";
-      $.getJSON(goalsUrl, function(goals) {
-        self.setState({
-          goalData: goals,
-          dataInit: true
-        }, function() {
-          $('.modal-trigger').leanModal();
-        });
-      });
     },
     deleteGoal: function(goalId) {
       var self = this;
@@ -37,9 +12,6 @@ var GoalsView = React.createClass({
           url: goalUrl,
           type: 'DELETE',
           success: function(result) {
-            self.setState({
-              dataInit: false
-            });
           }
       });
     },
@@ -48,22 +20,16 @@ var GoalsView = React.createClass({
     },
     render: function () {
       var self = this;
-      var goalData = this.state.goalData;
-      var initGoalData = Object.keys(goalData).length > 0;
-      if (!initGoalData) {
-        return (
-          <div></div>
-        )
-      }
+      var goalData = this.props.goalData;
 
       var goalRows = goalData.map(function(goalObj, index) {
         return (
           <tr key={index}>
             <td>{goalObj.goalName}</td>
             <td>{goalObj.value}</td>
-            <td>{goalObj.created}</td>
+            <td>{goalObj.date}</td>
             <td>
-              <a href="#" onClick={this.deleteGoal.bind(this, goalObj.gid)}><i className="material-icons">clear</i></a>
+              <a href="#" onClick={this.deleteGoal.bind(this, goalObj.gid)}><i className="material-icons red-icon">clear</i></a>
             </td>
           </tr>
         );
@@ -84,7 +50,7 @@ var GoalsView = React.createClass({
               <tr>
                 <th>Goal</th>
                 <th>Value</th>
-                <th>Created</th>
+                <th>Date</th>
                 <th></th>
               </tr>
             </thead>
@@ -92,7 +58,7 @@ var GoalsView = React.createClass({
               {goalRows}
             </tbody>
           </table>
-          <GoalModal personId={this.props.personId} cbDataInit={this.setDataInit} goalData={goalData}/>
+          <GoalModal personId={this.props.personId} cbDataInit={this.setDataInit} goalTypes={this.props.goalTypes} cbLoadData={this.props.cbLoadData}/>
         </div>
       );
     }

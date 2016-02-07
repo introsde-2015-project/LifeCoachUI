@@ -11,7 +11,7 @@ var ProfileSelect = React.createClass({
       var personProfiles = this.props.personsData.map(function(person, personIndex) {
         return (
          <li key={personIndex} className="collection-item avatar" onClick={this.selectPerson.bind(this, person.idPerson)}>
-            <img src="" alt="" className="circle"/>
+            <img src={person.imageUrl} alt="Profile image" className="circle"/>
             <span className="title">{person.firstname + " " + person.lastname}</span>
             <p>Birthdate: {person.birthdate}</p>
           </li>

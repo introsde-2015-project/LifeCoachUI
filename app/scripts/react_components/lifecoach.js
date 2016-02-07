@@ -5,7 +5,9 @@ var LifeCoach = React.createClass({
     return {
       personId: null,
       dailyStatsSet: false,
-      personsData: []
+      personsData: [],
+      measureTypes: [],
+      goalTypes: []
     }
   },
   componentWillMount: function() {
@@ -30,22 +32,38 @@ var LifeCoach = React.createClass({
     $.getJSON(lifecoachPersons, function(data) {
       self.setState({
         personsData: data
-      });
+      }, function() {
+        this.loadTypes();
+        }
+      );
     }).fail(function() {
       console.error("Cannot load persons data");
     });
   },
-  dailyStatsSet: function(statsSet) {
+  loadTypes: function() {
+    var self = this;
+    var measureTypesUrl = logicBaseUrl + "measuretypes";
+    var goalTypesUrl = logicBaseUrl + "goaltypes";
+    $.getJSON(measureTypesUrl, function(measureTypes) {
+      $.getJSON(goalTypesUrl, function(goalTypes) {
+        self.setState({
+          measureTypes: measureTypes,
+          goalTypes: goalTypes
+        });
+      });
+    });
+  },
+  setDailyStats: function() {
     this.setState({
-      dailyStatsSet: statsSet
+      dailyStatsSet: true
     });
   },
   // Render function
   render: function() {
     var mainView;
     var personId = this.state.personId
-    var header = <Header personId={personId} resetPerson={this.setPersonId.bind(this,null)} skipStatsSet={this.dailyStatsSet.bind(this,true)}/>
-    if (!this.state.personsData) {
+    var header = <Header personId={personId} resetPerson={this.setPersonId.bind(this,null)} skipStatsSet={this.setDailyStats}/>
+    if (!this.state.personsData.length > 0) {
       return (
         <div></div>
       )
@@ -53,9 +71,9 @@ var LifeCoach = React.createClass({
     if (personId == null) {
       mainView = <ProfileSelect personsData={this.state.personsData} callback={this.setPersonId}/>
     } else if (!this.state.dailyStatsSet){
-      mainView = <DailyStats personId={this.state.personId} callback={this.dailyStatsSet}/>
+      mainView = <DailyStats personId={this.state.personId} setDailyStats={this.setDailyStats}/>
     } else {
-      mainView = <div><ProfileView personId={this.state.personId}/></div>
+      mainView = <ProfileView personId={this.state.personId} goalTypes={this.state.goalTypes} measureTypes={this.state.measureTypes}/>
     }
     return (
       <div>

@@ -6,7 +6,8 @@
     "modernizr": "~2.8.1",
     "react": "^0.14.7",
     "babel": "*",
-    "Materialize": "materialize#^0.97.5"
+    "Materialize": "materialize#^0.97.5",
+    "dimple": "^2.1.6"
   },
   "overrides": {
     "bootstrap-sass": {

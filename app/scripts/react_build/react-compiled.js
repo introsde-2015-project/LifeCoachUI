@@ -1,5 +1,43 @@
 "use strict";
 
+var myChart = null;
+
+var Chart = React.createClass({
+	displayName: "Chart",
+
+	componentDidMount: function componentDidMount() {},
+	componentDidUpdate: function componentDidUpdate() {
+		if (myChart == null) {
+			this.initChart(this.props.data);
+		} else {
+			myChart.data = this.props.data;
+			myChart.draw();
+			myChart.axes[1].shapes.selectAll("text").attr("x", "-15");
+			myChart.axes[0].titleShape.text("Date");
+			myChart.axes[1].titleShape.text("Value");
+		}
+	},
+	initChart: function initChart(data) {
+		var width = $(".tab-container").width() - 20;
+		var height = width * 0.7;
+		var svg = dimple.newSvg("#measureChart", width, height);
+		myChart = new dimple.chart(svg, data);
+		myChart.setBounds(50, 10, width - 70, height - 95);
+		var x = myChart.addCategoryAxis("x", "date");
+		x.addOrderRule("Date");
+		var y = myChart.addMeasureAxis("y", "value");
+		var mySeries = myChart.addSeries(null, dimple.plot.bar);
+		myChart.draw();
+		x.titleShape.text("Date");
+		y.titleShape.text("Value");
+		y.shapes.selectAll("text").attr("x", "-15");
+	},
+	render: function render() {
+		return React.createElement("div", { id: "measureChart" });
+	}
+});
+"use strict";
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var DailyStats = React.createClass({
@@ -9,13 +47,24 @@ var DailyStats = React.createClass({
     return {
       sleep: false,
       calories: false,
-      steps: false
+      steps: false,
+      dailyStats: []
     };
   },
   componentDidUpdate: function componentDidUpdate() {
     if (this.state.sleep != false && this.state.calories != false && this.state.steps != false) {
-      this.props.callback(true);
+      setTimeout(function () {
+        this.postDailyStats();
+      }.bind(this), 0);
     }
+  },
+  onStatsChange: function onStatsChange(stat, value) {
+    var _setState;
+
+    var measure = { "measure": stat, "value": value };
+    var dailyStats = this.state.dailyStats;
+    dailyStats.push(measure);
+    this.setState((_setState = {}, _defineProperty(_setState, stat, true), _defineProperty(_setState, "dailyStats", dailyStats), _setState));
   },
   createNewMeasure: function createNewMeasure(value) {
     var measure = {
@@ -23,35 +72,41 @@ var DailyStats = React.createClass({
     };
     return JSON.stringify(measure);
   },
-  onStatsChange: function onStatsChange(stat, value) {
-    if (value != null && value != 0) {
-      var measure = this.createNewMeasure(value);
-      var self = this;
-      var timeline = this.state.timeline;
-      $.ajax({
-        url: processBaseUrl + "persons/" + this.props.personId + "/" + stat,
-        type: "POST",
-        data: measure,
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function success(data) {
-          self.setState(_defineProperty({}, stat, value));
-        }
-      });
-    } else {
-      this.setState(_defineProperty({}, stat, true));
+  postDailyStats: function postDailyStats() {
+    var dailyStats = this.state.dailyStats;
+    for (var i = 0; i < dailyStats.length; i++) {
+      var measureType = dailyStats[i].measure;
+      var value = dailyStats[i].value;
+      if (value != null && value != 0) {
+        var measureObj = this.createNewMeasure(value);
+        var self = this;
+        $.ajax({
+          async: false,
+          global: false,
+          url: processBaseUrl + "persons/" + this.props.personId + "/" + measureType,
+          type: "POST",
+          data: measureObj,
+          contentType: "application/json; charset=utf-8",
+          dataType: "json"
+        });
+      }
     }
+    this.props.setDailyStats();
   },
   render: function render() {
     var statsForm;
+    var questionNbr;
     if (this.state.sleep == false) {
+      questionNbr = 1;
       statsForm = React.createElement(StatsForm, { question: "How many hours did you sleep last night?", callback: this.onStatsChange.bind(this, "sleep") });
     } else if (this.state.steps == false) {
+      questionNbr = 2;
       statsForm = React.createElement(StatsForm, { question: "How many steps did you take yesterday?", callback: this.onStatsChange.bind(this, "steps") });
     } else if (this.state.calories == false) {
+      questionNbr = 3;
       statsForm = React.createElement(StatsForm, { question: "How many calories did you eat yesterday?", callback: this.onStatsChange.bind(this, "calories") });
     } else {
-      statsForm = React.createElement("div", null);
+      return React.createElement(Spinner, null);
     }
     return React.createElement(
       "div",
@@ -60,6 +115,49 @@ var DailyStats = React.createClass({
         "h3",
         { className: "statsHeading" },
         "Tell me about your day!"
+      ),
+      React.createElement(
+        "ul",
+        { className: "pagination" },
+        React.createElement(
+          "div",
+          { className: "breadcrumb" },
+          React.createElement(
+            "li",
+            { className: questionNbr == 1 ? "active" : null },
+            React.createElement(
+              "a",
+              null,
+              "Sleep"
+            )
+          )
+        ),
+        React.createElement(
+          "div",
+          { className: "breadcrumb" },
+          React.createElement(
+            "li",
+            { className: questionNbr == 2 ? "active" : null },
+            React.createElement(
+              "a",
+              null,
+              "Steps"
+            )
+          )
+        ),
+        React.createElement(
+          "div",
+          { className: "breadcrumb" },
+          React.createElement(
+            "li",
+            { className: questionNbr == 3 ? "active" : null },
+            React.createElement(
+              "a",
+              null,
+              "Calories"
+            )
+          )
+        )
       ),
       statsForm
     );
@@ -109,7 +207,7 @@ var StatsForm = React.createClass({
       React.createElement(
         "div",
         { className: "input-field col s6" },
-        React.createElement("input", { type: "number", value: this.state.statValue, onChange: this.onValueChange, onKeyDown: this.handleKeyDown })
+        React.createElement("input", { autoFocus: true, type: "number", value: this.state.statValue, onChange: this.onValueChange, onKeyDown: this.handleKeyDown })
       ),
       React.createElement(
         "a",
@@ -131,23 +229,9 @@ var GoalModal = React.createClass({
 
 	getInitialState: function getInitialState() {
 		return {
-			goalTypes: [],
 			goalType: "",
 			goalValue: ""
 		};
-	},
-	componentDidMount: function componentDidMount() {
-		this.loadGoalTypes();
-	},
-	loadGoalTypes: function loadGoalTypes() {
-		var self = this;
-		var goalTypesUrl = logicBaseUrl + "goaltypes";
-		$.getJSON(goalTypesUrl, function (goalTypes) {
-			console.log(goalTypes);
-			self.setState({
-				goalTypes: goalTypes
-			});
-		});
 	},
 	onGoalTypeChange: function onGoalTypeChange(event) {
 		this.setState({
@@ -178,7 +262,7 @@ var GoalModal = React.createClass({
 			dataType: "json",
 			success: function success(data) {
 				$('#goalModal').closeModal();
-				self.props.cbDataInit(false);
+				self.props.cbLoadData();
 			},
 			fail: function fail() {
 				$('#goalModal').closeModal();
@@ -189,7 +273,7 @@ var GoalModal = React.createClass({
 		$('#goalModal').closeModal();
 	},
 	render: function render() {
-		var goalTypes = this.state.goalTypes;
+		var goalTypes = this.props.goalTypes;
 
 		var goalOptions = $.map(goalTypes, function (goalType, index) {
 			return React.createElement(
@@ -280,35 +364,10 @@ var GoalsView = React.createClass({
   displayName: "GoalsView",
 
   getInitialState: function getInitialState() {
-    return {
-      dataInit: false,
-      goalData: {}
-    };
+    return null;
   },
   componentDidMount: function componentDidMount() {
     //this.loadGoalData();
-  },
-  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-    if (!this.state.dataInit) {
-      this.loadGoalData();
-    }
-  },
-  setDataInit: function setDataInit(dataInit) {
-    this.setState({
-      dataInit: dataInit
-    });
-  },
-  loadGoalData: function loadGoalData() {
-    var self = this;
-    var goalsUrl = logicBaseUrl + "persons/" + this.props.personId + "/goals";
-    $.getJSON(goalsUrl, function (goals) {
-      self.setState({
-        goalData: goals,
-        dataInit: true
-      }, function () {
-        $('.modal-trigger').leanModal();
-      });
-    });
   },
   deleteGoal: function deleteGoal(goalId) {
     var self = this;
@@ -316,11 +375,7 @@ var GoalsView = React.createClass({
     $.ajax({
       url: goalUrl,
       type: 'DELETE',
-      success: function success(result) {
-        self.setState({
-          dataInit: false
-        });
-      }
+      success: function success(result) {}
     });
   },
   openModal: function openModal() {
@@ -328,11 +383,7 @@ var GoalsView = React.createClass({
   },
   render: function render() {
     var self = this;
-    var goalData = this.state.goalData;
-    var initGoalData = Object.keys(goalData).length > 0;
-    if (!initGoalData) {
-      return React.createElement("div", null);
-    }
+    var goalData = this.props.goalData;
 
     var goalRows = goalData.map(function (goalObj, index) {
       return React.createElement(
@@ -351,7 +402,7 @@ var GoalsView = React.createClass({
         React.createElement(
           "td",
           null,
-          goalObj.created
+          goalObj.date
         ),
         React.createElement(
           "td",
@@ -361,7 +412,7 @@ var GoalsView = React.createClass({
             { href: "#", onClick: this.deleteGoal.bind(this, goalObj.gid) },
             React.createElement(
               "i",
-              { className: "material-icons" },
+              { className: "material-icons red-icon" },
               "clear"
             )
           )
@@ -424,7 +475,7 @@ var GoalsView = React.createClass({
             React.createElement(
               "th",
               null,
-              "Created"
+              "Date"
             ),
             React.createElement("th", null)
           )
@@ -435,7 +486,7 @@ var GoalsView = React.createClass({
           goalRows
         )
       ),
-      React.createElement(GoalModal, { personId: this.props.personId, cbDataInit: this.setDataInit, goalData: goalData })
+      React.createElement(GoalModal, { personId: this.props.personId, cbDataInit: this.setDataInit, goalTypes: this.props.goalTypes, cbLoadData: this.props.cbLoadData })
     );
   }
 });
@@ -528,9 +579,11 @@ var MeasureModal = React.createClass({
 		return JSON.stringify(measure);
 	},
 	handleSubmit: function handleSubmit(event) {
+		console.log("handleSubmit");
 		var self = this;
 		event.preventDefault();
 		var measure = this.createNewMeasure(this.state.measureValue);
+		console.log(measure);
 		$.ajax({
 			url: processBaseUrl + "persons/" + this.props.personId + "/" + this.state.measureType,
 			type: "POST",
@@ -538,10 +591,13 @@ var MeasureModal = React.createClass({
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
 			success: function success(data) {
+				console.log("success");
+				console.log(data);
 				$('#measureModal').closeModal();
-				self.props.cbDataInit(false);
+				self.props.cbLoadData();
 			},
 			fail: function fail() {
+				console.log("fail");
 				$('#measureModal').closeModal();
 			}
 		});
@@ -653,7 +709,7 @@ var ProfileSelect = React.createClass({
       return React.createElement(
         "li",
         { key: personIndex, className: "collection-item avatar", onClick: this.selectPerson.bind(this, person.idPerson) },
-        React.createElement("img", { src: "", alt: "", className: "circle" }),
+        React.createElement("img", { src: person.imageUrl, alt: "Profile image", className: "circle" }),
         React.createElement(
           "span",
           { className: "title" },
@@ -695,8 +751,14 @@ var ProfileView = React.createClass({
 
   getInitialState: function getInitialState() {
     return {
-      activeTab: "timeline"
+      activeTab: "timeline",
+      timelineData: null,
+      measuresData: null,
+      goalData: null
     };
+  },
+  componentWillMount: function componentWillMount() {
+    this.loadData();
   },
   componentDidMount: function componentDidMount() {
     $('ul.tabs').tabs();
@@ -704,6 +766,54 @@ var ProfileView = React.createClass({
   changeTab: function changeTab(tabName) {
     this.setState({
       activeTab: tabName
+    });
+  },
+  loadData: function loadData() {
+    this.loadTimelineData();
+  },
+  loadTimelineData: function loadTimelineData() {
+    var self = this;
+    var timelinesUrl = logicBaseUrl + "persons/" + this.props.personId + "/timelines";
+    $.getJSON(timelinesUrl, function (timelines) {
+      self.setState({
+        timelineData: timelines
+      }, function () {
+        this.loadMeasuresData();
+      });
+    });
+  },
+  loadMeasuresData: function loadMeasuresData() {
+    var self = this;
+    var measureTypes = this.props.measureTypes;
+    var measureBaseUrl = logicBaseUrl + "persons/" + this.props.personId + "/";
+    var measuresJsonArray = {};
+    var count = 0;
+    for (var i = 0; i < measureTypes.length; i++) {
+      $.ajax({
+        'async': false,
+        'global': false,
+        'url': measureBaseUrl + measureTypes[i],
+        'success': function success(measureData) {
+          measuresJsonArray[measureTypes[i]] = measureData;
+          count++;
+          if (count == measureTypes.length) {
+            self.setState({
+              measuresData: measuresJsonArray
+            }, function () {
+              self.loadGoalData();
+            });
+          }
+        }
+      });
+    }
+  },
+  loadGoalData: function loadGoalData() {
+    var self = this;
+    var goalsUrl = logicBaseUrl + "persons/" + this.props.personId + "/goals";
+    $.getJSON(goalsUrl, function (goals) {
+      self.setState({
+        goalData: goals
+      });
     });
   },
   render: function render() {
@@ -751,17 +861,17 @@ var ProfileView = React.createClass({
         React.createElement(
           "div",
           { id: "timeline", className: "col s12" },
-          React.createElement(TimelineView, { personId: this.props.personId })
+          this.state.timelineData ? React.createElement(TimelineView, { personId: this.props.personId, timelineData: this.state.timelineData }) : React.createElement(Spinner, null)
         ),
         React.createElement(
           "div",
           { id: "stats", className: "col s12" },
-          React.createElement(StatsView, { personId: this.props.personId })
+          this.state.measuresData ? React.createElement(StatsView, { personId: this.props.personId, measuresData: this.state.measuresData, measureTypes: this.props.measureTypes, cbLoadData: this.loadData }) : React.createElement(Spinner, null)
         ),
         React.createElement(
           "div",
           { id: "goals", className: "col s12" },
-          React.createElement(GoalsView, { personId: this.props.personId })
+          this.state.goalData ? React.createElement(GoalsView, { personId: this.props.personId, goalData: this.state.goalData, goalTypes: this.props.goalTypes, cbLoadData: this.loadData }) : React.createElement(Spinner, null)
         )
       )
     );
@@ -769,167 +879,100 @@ var ProfileView = React.createClass({
 });
 "use strict";
 
+var Spinner = React.createClass({
+  displayName: "Spinner",
+
+  render: function render() {
+    return React.createElement(
+      "div",
+      { className: "loader-screen" },
+      React.createElement(
+        "div",
+        { className: "preloader-wrapper big active" },
+        React.createElement(
+          "div",
+          { className: "spinner-layer" },
+          React.createElement(
+            "div",
+            { className: "circle-clipper left" },
+            React.createElement("div", { className: "circle" })
+          ),
+          React.createElement(
+            "div",
+            { className: "gap-patch" },
+            React.createElement("div", { className: "circle" })
+          ),
+          React.createElement(
+            "div",
+            { className: "circle-clipper right" },
+            React.createElement("div", { className: "circle" })
+          )
+        )
+      )
+    );
+  }
+});
+'use strict';
+
 var StatsView = React.createClass({
-  displayName: "StatsView",
+  displayName: 'StatsView',
 
   getInitialState: function getInitialState() {
     return {
-      dataInit: false,
-      measureTypes: [],
-      measuresData: {}
+      activeMeasure: "weight"
     };
   },
-  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-    if (!this.state.dataInit) {
-      this.loadMeasureData();
-    }
-  },
-  componentDidUpdate: function componentDidUpdate() {},
-  setDataInit: function setDataInit(dataInit) {
-    this.setState({
-      dataInit: dataInit
-    });
-  },
-  loadMeasureData: function loadMeasureData() {
-    var self = this;
-    var measureTypesUrl = logicBaseUrl + "measuretypes";
-    var measureBaseUrl = logicBaseUrl + "persons/" + this.props.personId + "/";
-    $.getJSON(measureTypesUrl, function (measureTypes) {
-      var measureJsonArray = {};
-      var count = 0;
-
-      for (var i = 0; i < measureTypes.length; i++) {
-        $.ajax({
-          'async': false,
-          'global': false,
-          'url': measureBaseUrl + measureTypes[i],
-          'success': function success(measureData) {
-            measureJsonArray[measureTypes[i]] = measureData;
-            count++;
-            if (count == measureTypes.length) {
-              self.setState({
-                measureTypes: measureTypes,
-                measuresData: measureJsonArray,
-                dataInit: true
-              }, function () {
-                $('.collapsible').collapsible();
-                $('.modal-trigger').leanModal();
-              });
-            }
-          }
-        });
-      }
-    });
+  componentDidMount: function componentDidMount() {
+    $('.collapsible').collapsible({});
   },
   openModal: function openModal() {
     $('#measureModal').openModal();
   },
+  setActiveMeasure: function setActiveMeasure(measure) {
+    this.setState({
+      activeMeasure: measure
+    });
+  },
   render: function render() {
-    var modal = this.state.modalOn;
-    var measuresData = this.state.measuresData;
-    var measureTypes = this.state.measureTypes;
-    var initMeasuresData = Object.keys(measuresData).length > 0;
-    if (!initMeasuresData) {
-      return React.createElement("div", null);
-    }
-
-    var measureTables = $.map(measuresData, function (measureData, measureName) {
-
-      var measureRows = $.map(measureData, function (measureObj, index) {
-        return React.createElement(
-          "tr",
-          { key: index },
-          React.createElement(
-            "td",
-            null,
-            measureObj.value
-          ),
-          React.createElement(
-            "td",
-            null,
-            measureObj.created
-          ),
-          React.createElement("td", null)
-        );
-      });
-
+    var measures = $.map(this.props.measureTypes, function (measureName, index) {
       return React.createElement(
-        "li",
-        { key: measureName },
+        'li',
+        { key: index, className: this.state.activeMeasure == measureName ? "active" : null },
         React.createElement(
-          "div",
-          { className: "collapsible-header" },
-          React.createElement(
-            "i",
-            { className: "material-icons" },
-            "filter_drama"
-          ),
-          React.createElement(
-            "p",
-            null,
-            measureName
-          )
-        ),
-        React.createElement(
-          "div",
-          { className: "collapsible-body" },
-          React.createElement(
-            "table",
-            null,
-            React.createElement(
-              "thead",
-              null,
-              React.createElement(
-                "tr",
-                null,
-                React.createElement(
-                  "th",
-                  null,
-                  "Value"
-                ),
-                React.createElement(
-                  "th",
-                  null,
-                  "Date"
-                )
-              )
-            ),
-            React.createElement(
-              "tbody",
-              null,
-              measureRows
-            )
-          )
+          'a',
+          { onClick: this.setActiveMeasure.bind(this, measureName) },
+          measureName
         )
       );
-    });
+    }.bind(this));
+
     return React.createElement(
-      "div",
-      { className: "statsView" },
+      'div',
+      { className: 'statsView' },
       React.createElement(
-        "nav",
-        { className: "sub-nav" },
+        'nav',
+        { className: 'sub-nav' },
         React.createElement(
-          "div",
-          { className: "nav-wrapper" },
+          'div',
+          { className: 'nav-wrapper' },
           React.createElement(
-            "div",
-            { className: "brand-logo left" },
-            "Your current statistics"
+            'div',
+            { className: 'brand-logo left' },
+            'Your current statistics'
           ),
           React.createElement(
-            "ul",
-            { className: "right" },
+            'ul',
+            { className: 'right' },
             React.createElement(
-              "li",
+              'li',
               null,
               React.createElement(
-                "a",
-                { onClick: this.openModal, className: "btn-floating waves-effect waves-light" },
+                'a',
+                { onClick: this.openModal, className: 'btn-floating waves-effect waves-light' },
                 React.createElement(
-                  "i",
-                  { className: "material-icons" },
-                  "add"
+                  'i',
+                  { className: 'material-icons' },
+                  'add'
                 )
               )
             )
@@ -937,11 +980,12 @@ var StatsView = React.createClass({
         )
       ),
       React.createElement(
-        "ul",
-        { className: "collapsible", "data-collapsible": "expandable" },
-        measureTables
+        'ul',
+        { className: 'pagination' },
+        measures
       ),
-      React.createElement(MeasureModal, { personId: this.props.personId, cbDataInit: this.setDataInit, measureTypes: measureTypes })
+      React.createElement(Chart, { data: this.props.measuresData[this.state.activeMeasure] }),
+      React.createElement(MeasureModal, { personId: this.props.personId, cbLoadData: this.props.cbLoadData, measureTypes: this.props.measureTypes })
     );
   }
 });
@@ -951,24 +995,10 @@ var TimelineView = React.createClass({
   displayName: "TimelineView",
 
   getInitialState: function getInitialState() {
-    return {
-      timelineData: {}
-    };
-  },
-  componentWillMount: function componentWillMount() {
-    this.loadTimelineData();
-  },
-  loadTimelineData: function loadTimelineData() {
-    var self = this;
-    var timelinesUrl = logicBaseUrl + "persons/" + this.props.personId + "/timelines";
-    $.getJSON(timelinesUrl, function (timelines) {
-      self.setState({
-        timelineData: timelines
-      });
-    });
+    return null;
   },
   render: function render() {
-    var timelineData = this.state.timelineData;
+    var timelineData = this.props.timelineData;
     var initTimelineData = Object.keys(timelineData).length > 0;
     if (!initTimelineData) {
       return React.createElement("div", null);
@@ -1019,7 +1049,7 @@ var TimelineView = React.createClass({
               React.createElement(
                 "div",
                 { className: "top-right" },
-                item.created
+                item.date
               )
             ),
             timelineCard
@@ -1221,7 +1251,9 @@ var LifeCoach = React.createClass({
     return {
       personId: null,
       dailyStatsSet: false,
-      personsData: []
+      personsData: [],
+      measureTypes: [],
+      goalTypes: []
     };
   },
   componentWillMount: function componentWillMount() {
@@ -1243,34 +1275,45 @@ var LifeCoach = React.createClass({
     $.getJSON(lifecoachPersons, function (data) {
       self.setState({
         personsData: data
+      }, function () {
+        this.loadTypes();
       });
     }).fail(function () {
       console.error("Cannot load persons data");
     });
   },
-  dailyStatsSet: function dailyStatsSet(statsSet) {
+  loadTypes: function loadTypes() {
+    var self = this;
+    var measureTypesUrl = logicBaseUrl + "measuretypes";
+    var goalTypesUrl = logicBaseUrl + "goaltypes";
+    $.getJSON(measureTypesUrl, function (measureTypes) {
+      $.getJSON(goalTypesUrl, function (goalTypes) {
+        self.setState({
+          measureTypes: measureTypes,
+          goalTypes: goalTypes
+        });
+      });
+    });
+  },
+  setDailyStats: function setDailyStats() {
     this.setState({
-      dailyStatsSet: statsSet
+      dailyStatsSet: true
     });
   },
   // Render function
   render: function render() {
     var mainView;
     var personId = this.state.personId;
-    var header = React.createElement(Header, { personId: personId, resetPerson: this.setPersonId.bind(this, null), skipStatsSet: this.dailyStatsSet.bind(this, true) });
-    if (!this.state.personsData) {
+    var header = React.createElement(Header, { personId: personId, resetPerson: this.setPersonId.bind(this, null), skipStatsSet: this.setDailyStats });
+    if (!this.state.personsData.length > 0) {
       return React.createElement("div", null);
     }
     if (personId == null) {
       mainView = React.createElement(ProfileSelect, { personsData: this.state.personsData, callback: this.setPersonId });
     } else if (!this.state.dailyStatsSet) {
-      mainView = React.createElement(DailyStats, { personId: this.state.personId, callback: this.dailyStatsSet });
+      mainView = React.createElement(DailyStats, { personId: this.state.personId, setDailyStats: this.setDailyStats });
     } else {
-      mainView = React.createElement(
-        "div",
-        null,
-        React.createElement(ProfileView, { personId: this.state.personId })
-      );
+      mainView = React.createElement(ProfileView, { personId: this.state.personId, goalTypes: this.state.goalTypes, measureTypes: this.state.measureTypes });
     }
     return React.createElement(
       "div",

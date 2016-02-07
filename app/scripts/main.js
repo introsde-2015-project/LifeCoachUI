@@ -1,2 +1,2 @@
-var logicBaseUrl = "http://localhost:4900/";
-var processBaseUrl = "http://localhost:7000/";
+var logicBaseUrl = "https://businesslogic-introsde.herokuapp.com/";
+var processBaseUrl = "https://processcentric-introsde.herokuapp.com/";

@@ -22,9 +22,11 @@ var MeasureModal = React.createClass({
       return JSON.stringify(measure);
     },
     handleSubmit: function(event) {
+    	console.log("handleSubmit");
     	var self = this;
 		event.preventDefault();
     	var measure = this.createNewMeasure(this.state.measureValue);
+    	console.log(measure);
 		$.ajax({
 	      url:processBaseUrl+"persons/" + this.props.personId + "/" + this.state.measureType,
 	      type:"POST",
@@ -32,10 +34,13 @@ var MeasureModal = React.createClass({
 	      contentType:"application/json; charset=utf-8",
 	      dataType:"json",
 	      success: function(data){
+	      	console.log("success");
+	      	console.log(data);
 	      	$('#measureModal').closeModal();
-	        self.props.cbDataInit(false);
+	        self.props.cbLoadData();
 	      },
 	      fail: function() {
+	      	console.log("fail");
 	      	$('#measureModal').closeModal();
 	      }
 	    })

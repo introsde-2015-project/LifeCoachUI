@@ -50,21 +50,41 @@ nav.sub-nav .btn-floating i {
 }
 
 .profileSelect {
-  padding: 0px 20px;
+  padding: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
 .profileSelect .card-panel {
   padding: 0;
 }
 
+.profileSelect .card-panel .collection .collection-item.avatar {
+  padding-left: 10px;
+}
+
+.dailyStats {
+  text-align: center;
+}
+
 .dailyStats .statsHeading {
   font-weight: 200;
+}
+
+.dailyStats div.breadcrumb {
+  line-height: 30px;
+  display: inline-block;
+}
+
+.dailyStats div.breadcrumb:before {
+  color: #000;
 }
 
 .statsForm {
   width: 70%;
   margin: auto;
-  padding-top: 30px;
+  padding: 20px 0;
 }
 
 .statsForm .skip-btn {
@@ -81,10 +101,17 @@ nav.sub-nav .btn-floating i {
     background-color: #eee;//color("cyan", "lighten-2");
 }
 
-.statsView .collapsible-header p {
-  margin: 0;
+.statsView .pagination {
+  text-align: center;
+}
+
+.statsView .pagination li {
+  padding: 0 20px;
+}
+
+.statsView .pagination li a {
   text-transform: capitalize;
-  display: inline-block;
+  cursor: pointer;
 }
 
 .statsView .collapsible-header .btn-floating {
@@ -95,6 +122,14 @@ nav.sub-nav .btn-floating i {
 .statsView .collapsible-header .btn-floating i {
   line-height: inherit;
   width: inherit;
+}
+
+i.red-icon {
+  color: red;
+}
+
+i.green-icon {
+  color: green;
 }
 
 .card .card-top {
@@ -119,14 +154,6 @@ nav.sub-nav .btn-floating i {
     line-height: 3rem;
     float: left;
     margin-right: 1rem;
-  }
-
-  i.red-icon {
-    color: red;
-  }
-
-  i.green-icon {
-    color: green;
   }
   
   .measure {
@@ -197,56 +224,24 @@ nav.sub-nav .btn-floating i {
   cursor: pointer;
 }
 
-
-
-
-
-
-
-
-
-
-.panel .panel-heading {
-  text-transform: capitalize;
-  padding: 10px;
+.loader-screen {
+  height: 500px;
 }
 
-.panel .panel-heading .addGoal {
-  float: right;
+.loader-screen .preloader-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -32px;
+    margin-top: -32px;
 }
 
-.tab-pane {
-  padding: 20px;
-}
 
-.profileSelect {
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-}
 
-.nav .glyphicon {
-  font-size: 20px;
-  line-height: 40px;
-  padding: 0 10px;
-}
 
-.dailyStats {
-  text-align: center;
-}
 
-.list-group {
-  max-width: 200px;
-  margin: auto;
-}
 
-.list-group .media {
-  display: inline-block;
-}
 
-.list-group .media .media-body {
-  width: auto;
-}
 
 /* Space out content a bit */
 body {
