@@ -1,3 +1,4 @@
+var ajaxErrorCount = 0;
 
 var LifeCoach = React.createClass({ 
   // Init initial variables
@@ -7,14 +8,12 @@ var LifeCoach = React.createClass({
       dailyStatsSet: false,
       personsData: [],
       measureTypes: [],
-      goalTypes: []
+      goalTypes: [],
+      about: false
     }
   },
-  componentWillMount: function() {
-    this.loadPersonsData();
-  },
-  // On first mount, load game data of selected game and set 5min interval
   componentDidMount: function() {
+    this.loadPersonsData();
   },
   // With every state update, call external functions to handle resize and autoscroll
   componentDidUpdate: function(prevProps, prevState) {
@@ -23,52 +22,81 @@ var LifeCoach = React.createClass({
   setPersonId: function(personId) {
     this.setState({
       personId: personId,
-      dailyStatsSet: false
+      dailyStatsSet: false,
+      about: false
     });
   },
   loadPersonsData: function() {
     var self = this;
-    var lifecoachPersons = logicBaseUrl + "persons";
-    $.getJSON(lifecoachPersons, function(data) {
-      self.setState({
-        personsData: data
-      }, function() {
-        this.loadTypes();
-        }
-      );
-    }).fail(function() {
-      console.error("Cannot load persons data");
-    });
+    var lifecoachPersonsUrl = logicBaseUrl + "persons";
+    $.ajax({
+      url: lifecoachPersonsUrl,
+      success: function(data) {
+        ajaxErrorCount = 0;
+        self.setState({
+          personsData: data
+        }, function() {
+          this.loadTypes();
+        });
+      },
+      timeout: 10000,
+      error: function(jqXHR, textStatus, errorThrown) {
+        ajaxErrorCount++;
+          console.log("Error: " + textStatus);
+          console.log(jqXHR);
+          if (ajaxErrorCount < 5) {
+            self.loadPersonsData();
+          }
+      },
+    })
   },
   loadTypes: function() {
     var self = this;
     var measureTypesUrl = logicBaseUrl + "measuretypes";
     var goalTypesUrl = logicBaseUrl + "goaltypes";
-    $.getJSON(measureTypesUrl, function(measureTypes) {
-      $.getJSON(goalTypesUrl, function(goalTypes) {
-        self.setState({
-          measureTypes: measureTypes,
-          goalTypes: goalTypes
+    $.ajax({
+      url: measureTypesUrl,
+      success: function(measureTypes) {
+        $.ajax({
+          url: goalTypesUrl,
+          success: function(goalTypes) {
+            self.setState({
+              measureTypes: measureTypes,
+              goalTypes: goalTypes
+            });
+          }
         });
-      });
+      }
     });
   },
   setDailyStats: function() {
     this.setState({
-      dailyStatsSet: true
+      dailyStatsSet: true,
+      about: false
     });
+  },
+  openAbout: function() {
+    this.setState({
+      about: true
+    })
   },
   // Render function
   render: function() {
     var mainView;
     var personId = this.state.personId
-    var header = <Header personId={personId} resetPerson={this.setPersonId.bind(this,null)} skipStatsSet={this.setDailyStats}/>
+    var header = <Header personId={personId} resetPerson={this.setPersonId.bind(this,null)} skipStatsSet={this.setDailyStats} openAbout={this.openAbout}/>
     if (!this.state.personsData.length > 0) {
       return (
-        <div></div>
+        <div>
+          {header}
+          <Spinner/>
+        </div>  
       )
     }
-    if (personId == null) {
+    if (this.state.about) {
+      mainView = <About/>
+    }
+    else if (personId == null) {
       mainView = <ProfileSelect personsData={this.state.personsData} callback={this.setPersonId}/>
     } else if (!this.state.dailyStatsSet){
       mainView = <DailyStats personId={this.state.personId} setDailyStats={this.setDailyStats}/>

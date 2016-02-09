@@ -18,16 +18,10 @@ body {
 }
 
 .tab-container {
-  padding-top: 20px;
+  padding: 20px 0;
   overflow: auto;
   width: 80%;
   margin: auto;
-}
-
-@media #{$medium-and-down} {
-  .tab-container {
-    width: 90%;
-  }
 }
 
 nav {
@@ -101,6 +95,10 @@ nav.sub-nav .btn-floating i {
     background-color: #eee;//color("cyan", "lighten-2");
 }
 
+.timeline .timeline-header {
+  text-align: center;
+}
+
 .statsView .pagination {
   text-align: center;
 }
@@ -122,6 +120,11 @@ nav.sub-nav .btn-floating i {
 .statsView .collapsible-header .btn-floating i {
   line-height: inherit;
   width: inherit;
+}
+
+.measure-view, .goals-view {
+  text-align: center;
+  padding: 20px;
 }
 
 i.red-icon {
@@ -224,8 +227,17 @@ i.green-icon {
   cursor: pointer;
 }
 
-.loader-screen {
+.spinner .loader-screen {
   height: 500px;
+}
+
+.overlay-spinner .loader-screen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: rgba(0,0,0,0.1);
 }
 
 .loader-screen .preloader-wrapper {
@@ -236,8 +248,36 @@ i.green-icon {
     margin-top: -32px;
 }
 
+.about {
+  padding: 20px 30px;
+  overflow: auto;
+
+  .author-img img {
+    border-radius: 10px;
+    width: 100%;
+  }
 
 
+}
+
+
+@media #{$medium-and-down} {
+  .tab-container {
+    width: 90%;
+  }
+}
+
+@media #{$small-and-down} {
+
+  .about {
+    text-align: center;
+  }
+
+  .row .col.author-img {
+    padding: 0 15%;
+  }
+
+}
 
 
 

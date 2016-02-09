@@ -1,13 +1,109 @@
 "use strict";
 
+var About = React.createClass({
+  displayName: "About",
+
+  render: function render() {
+    return React.createElement(
+      "div",
+      { className: "about row" },
+      React.createElement(
+        "div",
+        { className: "app-description" },
+        React.createElement(
+          "h4",
+          null,
+          "What is Lifecoach application?"
+        ),
+        React.createElement(
+          "p",
+          null,
+          "The Lifecoach application allows user follow his/hers health measurements and get motivational suggestions based on the performance of the user."
+        ),
+        React.createElement(
+          "p",
+          null,
+          "The application starts by picking up a dummy profile. User can then add daily measurements (steps, sleep, calories) which are saved for the user. The application visualizes the measure history of user by showing charts that show the values of the measure over time."
+        ),
+        React.createElement(
+          "p",
+          null,
+          "User can also define specific daily goals (f.ex. ”daily steps count 8000”) that the application follows. Based on whether the goals are reached or not, the application will motivate (through jokes) or suggest actions (recipes, new music) to support user to reach the goals. These are shown in the user’s timeline."
+        ),
+        React.createElement(
+          "p",
+          null,
+          "Read more about the application from ",
+          React.createElement(
+            "a",
+            { link: true, href: "https://github.com/introsde-2015-project", target: "_blank" },
+            " GitHub"
+          )
+        )
+      ),
+      React.createElement(
+        "div",
+        { className: "author row" },
+        React.createElement(
+          "h4",
+          { className: "col s12" },
+          "Who is behind this?"
+        ),
+        React.createElement(
+          "div",
+          { className: "author-img col s12 m4" },
+          React.createElement("img", { src: "http://gravatar.com/avatar/775d7fbbe7e5fe487de01c2670076269.jpg?s=600" })
+        ),
+        React.createElement(
+          "div",
+          { className: "author-text col s12 m8" },
+          React.createElement(
+            "p",
+            null,
+            "This application was developed as the final project for the course Introduction to Service Design and Engineering of University of Trento."
+          ),
+          React.createElement(
+            "p",
+            null,
+            "The application is developed by ",
+            React.createElement(
+              "b",
+              null,
+              "Toomas Kallioja"
+            )
+          ),
+          React.createElement(
+            "p",
+            null,
+            "Contact: ",
+            React.createElement(
+              "a",
+              { href: "mailto:toomas.kallioja@gmail.com" },
+              "toomas.kallioja@gmail.com"
+            )
+          )
+        )
+      )
+    );
+  }
+});
+"use strict";
+
 var myChart = null;
 
 var Chart = React.createClass({
 	displayName: "Chart",
 
-	componentDidMount: function componentDidMount() {},
+	getInitialState: function getInitialState() {
+		return {
+			chartInitialized: false
+		};
+	},
+	componentDidMount: function componentDidMount() {
+		this.initChart(this.props.data);
+	},
 	componentDidUpdate: function componentDidUpdate() {
-		if (myChart == null) {
+		if (!this.state.chartInitialized) {
 			this.initChart(this.props.data);
 		} else {
 			myChart.data = this.props.data;
@@ -19,6 +115,9 @@ var Chart = React.createClass({
 	},
 	initChart: function initChart(data) {
 		var width = $(".tab-container").width() - 20;
+		if (width == 0) {
+			return;
+		}
 		var height = width * 0.7;
 		var svg = dimple.newSvg("#measureChart", width, height);
 		myChart = new dimple.chart(svg, data);
@@ -31,6 +130,9 @@ var Chart = React.createClass({
 		x.titleShape.text("Date");
 		y.titleShape.text("Value");
 		y.shapes.selectAll("text").attr("x", "-15");
+		this.setState({
+			chartInitialized: true
+		});
 	},
 	render: function render() {
 		return React.createElement("div", { id: "measureChart" });
@@ -55,7 +157,7 @@ var DailyStats = React.createClass({
     if (this.state.sleep != false && this.state.calories != false && this.state.steps != false) {
       setTimeout(function () {
         this.postDailyStats();
-      }.bind(this), 0);
+      }.bind(this), 10);
     }
   },
   onStatsChange: function onStatsChange(stat, value) {
@@ -230,7 +332,8 @@ var GoalModal = React.createClass({
 	getInitialState: function getInitialState() {
 		return {
 			goalType: "",
-			goalValue: ""
+			goalValue: "",
+			spinner: false
 		};
 	},
 	onGoalTypeChange: function onGoalTypeChange(event) {
@@ -251,8 +354,15 @@ var GoalModal = React.createClass({
 		return JSON.stringify(goal);
 	},
 	handleSubmit: function handleSubmit(event) {
-		var self = this;
 		event.preventDefault();
+		this.setState({
+			spinner: true
+		}, function () {
+			this.postGoal();
+		});
+	},
+	postGoal: function postGoal() {
+		var self = this;
 		var goal = this.createNewGoal(this.state.goalValue, this.state.goalType);
 		$.ajax({
 			url: processBaseUrl + "persons/" + this.props.personId + "/goals",
@@ -261,11 +371,20 @@ var GoalModal = React.createClass({
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
 			success: function success(data) {
-				$('#goalModal').closeModal();
-				self.props.cbLoadData();
+				self.setState({
+					spinner: false
+				}, function () {
+					$('#goalModal').closeModal();
+					self.props.cbLoadData();
+				});
 			},
 			fail: function fail() {
-				$('#goalModal').closeModal();
+				console.log("Failed to add goal");
+				self.setState({
+					spinner: false
+				}, function () {
+					$('#goalModal').closeModal();
+				});
 			}
 		});
 	},
@@ -352,7 +471,8 @@ var GoalModal = React.createClass({
 								"send"
 							)
 						)
-					)
+					),
+					this.state.spinner ? React.createElement(Spinner, { overlay: true }) : null
 				)
 			)
 		);
@@ -375,7 +495,9 @@ var GoalsView = React.createClass({
     $.ajax({
       url: goalUrl,
       type: 'DELETE',
-      success: function success(result) {}
+      success: function success(result) {
+        self.props.cbLoadData();
+      }
     });
   },
   openModal: function openModal() {
@@ -420,6 +542,50 @@ var GoalsView = React.createClass({
       );
     }, this);
 
+    var goalsView;
+
+    if (goalData.length > 0) {
+      goalsView = React.createElement(
+        "table",
+        { className: "bordered" },
+        React.createElement(
+          "thead",
+          null,
+          React.createElement(
+            "tr",
+            null,
+            React.createElement(
+              "th",
+              null,
+              "Goal"
+            ),
+            React.createElement(
+              "th",
+              null,
+              "Value"
+            ),
+            React.createElement(
+              "th",
+              null,
+              "Date"
+            ),
+            React.createElement("th", null)
+          )
+        ),
+        React.createElement(
+          "tbody",
+          null,
+          goalRows
+        )
+      );
+    } else {
+      goalsView = React.createElement(
+        "div",
+        { className: "goals-view" },
+        "No goals added yet."
+      );
+    }
+
     return React.createElement(
       "div",
       null,
@@ -453,40 +619,8 @@ var GoalsView = React.createClass({
           )
         )
       ),
-      React.createElement(
-        "table",
-        { className: "bordered" },
-        React.createElement(
-          "thead",
-          null,
-          React.createElement(
-            "tr",
-            null,
-            React.createElement(
-              "th",
-              null,
-              "Goal"
-            ),
-            React.createElement(
-              "th",
-              null,
-              "Value"
-            ),
-            React.createElement(
-              "th",
-              null,
-              "Date"
-            ),
-            React.createElement("th", null)
-          )
-        ),
-        React.createElement(
-          "tbody",
-          null,
-          goalRows
-        )
-      ),
-      React.createElement(GoalModal, { personId: this.props.personId, cbDataInit: this.setDataInit, goalTypes: this.props.goalTypes, cbLoadData: this.props.cbLoadData })
+      goalsView,
+      React.createElement(GoalModal, { personId: this.props.personId, goalTypes: this.props.goalTypes, cbLoadData: this.props.cbLoadData })
     );
   }
 });
@@ -495,12 +629,6 @@ var GoalsView = React.createClass({
 var Header = React.createClass({
   displayName: "Header",
 
-  skipStatsSet: function skipStatsSet() {
-    this.props.skipStatsSet();
-  },
-  resetPerson: function resetPerson() {
-    this.props.resetPerson();
-  },
   render: function render() {
     return React.createElement(
       "nav",
@@ -510,10 +638,10 @@ var Header = React.createClass({
         { className: "nav-wrapper" },
         React.createElement(
           "div",
-          { className: "brand-logo left", onClick: this.resetPerson },
+          { className: "brand-logo left" },
           React.createElement(
             "a",
-            { href: "#" },
+            { href: "#", onClick: this.props.skipStatsSet },
             "LifeCoach"
           )
         ),
@@ -522,14 +650,14 @@ var Header = React.createClass({
           { className: "right" },
           this.props.personId != null ? React.createElement(
             "li",
-            { onClick: this.skipStatsSet },
+            { onClick: this.props.resetPerson },
             React.createElement(
               "a",
               null,
               React.createElement(
                 "i",
                 { className: "material-icons" },
-                "account_circle"
+                "exit_to_app"
               )
             )
           ) : null,
@@ -538,7 +666,7 @@ var Header = React.createClass({
             null,
             React.createElement(
               "a",
-              null,
+              { onClick: this.props.openAbout },
               React.createElement(
                 "i",
                 { className: "material-icons" },
@@ -559,7 +687,8 @@ var MeasureModal = React.createClass({
 	getInitialState: function getInitialState() {
 		return {
 			measureType: "",
-			measureValue: ""
+			measureValue: "",
+			spinner: false
 		};
 	},
 	onMeasureTypeChange: function onMeasureTypeChange(event) {
@@ -579,26 +708,38 @@ var MeasureModal = React.createClass({
 		return JSON.stringify(measure);
 	},
 	handleSubmit: function handleSubmit(event) {
-		console.log("handleSubmit");
-		var self = this;
 		event.preventDefault();
+		this.setState({
+			spinner: true
+		}, function () {
+			this.postMeasure();
+		});
+	},
+	postMeasure: function postMeasure() {
+		var self = this;
 		var measure = this.createNewMeasure(this.state.measureValue);
-		console.log(measure);
 		$.ajax({
 			url: processBaseUrl + "persons/" + this.props.personId + "/" + this.state.measureType,
 			type: "POST",
 			data: measure,
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
+			timeout: 10000,
 			success: function success(data) {
-				console.log("success");
-				console.log(data);
-				$('#measureModal').closeModal();
-				self.props.cbLoadData();
+				self.setState({
+					spinner: false
+				}, function () {
+					$('#measureModal').closeModal();
+					self.props.cbLoadData();
+				});
 			},
 			fail: function fail() {
-				console.log("fail");
-				$('#measureModal').closeModal();
+				console.log("Failed to add measure");
+				self.setState({
+					spinner: false
+				}, function () {
+					$('#measureModal').closeModal();
+				});
 			}
 		});
 	},
@@ -685,7 +826,8 @@ var MeasureModal = React.createClass({
 								"send"
 							)
 						)
-					)
+					),
+					this.state.spinner ? React.createElement(Spinner, { overlay: true }) : null
 				)
 			)
 		);
@@ -709,7 +851,7 @@ var ProfileSelect = React.createClass({
       return React.createElement(
         "li",
         { key: personIndex, className: "collection-item avatar", onClick: this.selectPerson.bind(this, person.idPerson) },
-        React.createElement("img", { src: person.imageUrl, alt: "Profile image", className: "circle" }),
+        React.createElement("img", { src: person.imageUrl, alt: "", className: "circle" }),
         React.createElement(
           "span",
           { className: "title" },
@@ -885,27 +1027,31 @@ var Spinner = React.createClass({
   render: function render() {
     return React.createElement(
       "div",
-      { className: "loader-screen" },
+      { className: this.props.overlay ? "overlay-spinner" : "spinner" },
       React.createElement(
         "div",
-        { className: "preloader-wrapper big active" },
+        { className: "loader-screen" },
         React.createElement(
           "div",
-          { className: "spinner-layer" },
+          { className: "preloader-wrapper big active" },
           React.createElement(
             "div",
-            { className: "circle-clipper left" },
-            React.createElement("div", { className: "circle" })
-          ),
-          React.createElement(
-            "div",
-            { className: "gap-patch" },
-            React.createElement("div", { className: "circle" })
-          ),
-          React.createElement(
-            "div",
-            { className: "circle-clipper right" },
-            React.createElement("div", { className: "circle" })
+            { className: "spinner-layer" },
+            React.createElement(
+              "div",
+              { className: "circle-clipper left" },
+              React.createElement("div", { className: "circle" })
+            ),
+            React.createElement(
+              "div",
+              { className: "gap-patch" },
+              React.createElement("div", { className: "circle" })
+            ),
+            React.createElement(
+              "div",
+              { className: "circle-clipper right" },
+              React.createElement("div", { className: "circle" })
+            )
           )
         )
       )
@@ -934,6 +1080,7 @@ var StatsView = React.createClass({
     });
   },
   render: function render() {
+    var measureData = this.props.measuresData[this.state.activeMeasure];
     var measures = $.map(this.props.measureTypes, function (measureName, index) {
       return React.createElement(
         'li',
@@ -945,6 +1092,17 @@ var StatsView = React.createClass({
         )
       );
     }.bind(this));
+
+    var measureView;
+    if (measureData.length > 0) {
+      measureView = React.createElement(Chart, { data: measureData });
+    } else {
+      measureView = React.createElement(
+        'div',
+        { className: 'measure-view' },
+        'No measures added yet.'
+      );
+    }
 
     return React.createElement(
       'div',
@@ -984,7 +1142,7 @@ var StatsView = React.createClass({
         { className: 'pagination' },
         measures
       ),
-      React.createElement(Chart, { data: this.props.measuresData[this.state.activeMeasure] }),
+      measureView,
       React.createElement(MeasureModal, { personId: this.props.personId, cbLoadData: this.props.cbLoadData, measureTypes: this.props.measureTypes })
     );
   }
@@ -994,15 +1152,8 @@ var StatsView = React.createClass({
 var TimelineView = React.createClass({
   displayName: "TimelineView",
 
-  getInitialState: function getInitialState() {
-    return null;
-  },
   render: function render() {
     var timelineData = this.props.timelineData;
-    var initTimelineData = Object.keys(timelineData).length > 0;
-    if (!initTimelineData) {
-      return React.createElement("div", null);
-    }
     var timelines = $.map(timelineData, function (item, index) {
       var timelineString = item.JSONString.replace(/'/g, '"');
       var timelineObj = JSON.parse(timelineString);
@@ -1061,15 +1212,17 @@ var TimelineView = React.createClass({
     var header;
     if (timelines.length == 0) {
       header = React.createElement(
-        "h3",
-        null,
-        "No actions yet. Go add your goals and daily results!"
+        "p",
+        { className: "timeline-header" },
+        "No actions yet. ",
+        React.createElement("br", null),
+        "Go add your goals and daily results!"
       );
     }
 
     return React.createElement(
       "div",
-      null,
+      { className: "timeline" },
       header,
       timelines
     );
@@ -1243,6 +1396,8 @@ var Recipe = React.createClass({
 });
 "use strict";
 
+var ajaxErrorCount = 0;
+
 var LifeCoach = React.createClass({
   displayName: "LifeCoach",
 
@@ -1253,62 +1408,92 @@ var LifeCoach = React.createClass({
       dailyStatsSet: false,
       personsData: [],
       measureTypes: [],
-      goalTypes: []
+      goalTypes: [],
+      about: false
     };
   },
-  componentWillMount: function componentWillMount() {
+  componentDidMount: function componentDidMount() {
     this.loadPersonsData();
   },
-  // On first mount, load game data of selected game and set 5min interval
-  componentDidMount: function componentDidMount() {},
   // With every state update, call external functions to handle resize and autoscroll
   componentDidUpdate: function componentDidUpdate(prevProps, prevState) {},
   setPersonId: function setPersonId(personId) {
     this.setState({
       personId: personId,
-      dailyStatsSet: false
+      dailyStatsSet: false,
+      about: false
     });
   },
   loadPersonsData: function loadPersonsData() {
     var self = this;
-    var lifecoachPersons = logicBaseUrl + "persons";
-    $.getJSON(lifecoachPersons, function (data) {
-      self.setState({
-        personsData: data
-      }, function () {
-        this.loadTypes();
-      });
-    }).fail(function () {
-      console.error("Cannot load persons data");
+    var lifecoachPersonsUrl = logicBaseUrl + "persons";
+    $.ajax({
+      url: lifecoachPersonsUrl,
+      success: function success(data) {
+        ajaxErrorCount = 0;
+        self.setState({
+          personsData: data
+        }, function () {
+          this.loadTypes();
+        });
+      },
+      timeout: 10000,
+      error: function error(jqXHR, textStatus, errorThrown) {
+        ajaxErrorCount++;
+        console.log("Error: " + textStatus);
+        console.log(jqXHR);
+        if (ajaxErrorCount < 5) {
+          self.loadPersonsData();
+        }
+      }
     });
   },
   loadTypes: function loadTypes() {
     var self = this;
     var measureTypesUrl = logicBaseUrl + "measuretypes";
     var goalTypesUrl = logicBaseUrl + "goaltypes";
-    $.getJSON(measureTypesUrl, function (measureTypes) {
-      $.getJSON(goalTypesUrl, function (goalTypes) {
-        self.setState({
-          measureTypes: measureTypes,
-          goalTypes: goalTypes
+    $.ajax({
+      url: measureTypesUrl,
+      success: function success(measureTypes) {
+        $.ajax({
+          url: goalTypesUrl,
+          success: function success(goalTypes) {
+            self.setState({
+              measureTypes: measureTypes,
+              goalTypes: goalTypes
+            });
+          }
         });
-      });
+      }
     });
   },
   setDailyStats: function setDailyStats() {
     this.setState({
-      dailyStatsSet: true
+      dailyStatsSet: true,
+      about: false
+    });
+  },
+  openAbout: function openAbout() {
+    this.setState({
+      about: true
     });
   },
   // Render function
   render: function render() {
     var mainView;
     var personId = this.state.personId;
-    var header = React.createElement(Header, { personId: personId, resetPerson: this.setPersonId.bind(this, null), skipStatsSet: this.setDailyStats });
+    var header = React.createElement(Header, { personId: personId, resetPerson: this.setPersonId.bind(this, null), skipStatsSet: this.setDailyStats, openAbout: this.openAbout });
     if (!this.state.personsData.length > 0) {
-      return React.createElement("div", null);
+      return React.createElement(
+        "div",
+        null,
+        header,
+        React.createElement(Spinner, null)
+      );
     }
-    if (personId == null) {
+    if (this.state.about) {
+      mainView = React.createElement(About, null);
+    } else if (personId == null) {
       mainView = React.createElement(ProfileSelect, { personsData: this.state.personsData, callback: this.setPersonId });
     } else if (!this.state.dailyStatsSet) {
       mainView = React.createElement(DailyStats, { personId: this.state.personId, setDailyStats: this.setDailyStats });

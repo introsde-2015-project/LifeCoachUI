@@ -2,7 +2,8 @@ var GoalModal = React.createClass({
 	 getInitialState: function () {  
       return {
         goalType: "",
-        goalValue: ""
+        goalValue: "",
+        spinner: false
       }
     },
     onGoalTypeChange: function(event) {
@@ -23,21 +24,37 @@ var GoalModal = React.createClass({
       return JSON.stringify(goal);
     },
     handleSubmit: function(event) {
-    	var self = this;
 		event.preventDefault();
+		this.setState({
+    		spinner:true
+    	}, function() {
+    		this.postGoal();
+    	});
+    },
+    postGoal: function() {
+    	var self = this;
     	var goal = this.createNewGoal(this.state.goalValue, this.state.goalType);
-		$.ajax({
+    	$.ajax({
 	      url:processBaseUrl+"persons/" + this.props.personId + "/goals",
 	      type:"POST",
 	      data:goal,
 	      contentType:"application/json; charset=utf-8",
 	      dataType:"json",
 	      success: function(data){
-	      	$('#goalModal').closeModal();
-	        self.props.cbLoadData();
+	      	self.setState({
+	      		spinner: false
+	      	}, function() {
+		      	$('#goalModal').closeModal();
+	        	self.props.cbLoadData();
+	      	})
 	      },
 	      fail: function() {
-	      	$('#goalModal').closeModal();
+	      	console.log("Failed to add goal");
+	      	self.setState({
+	      		spinner: false
+	      	}, function() {
+		      	$('#goalModal').closeModal();
+	      	})
 	      }
 	    })
     },
@@ -77,6 +94,7 @@ var GoalModal = React.createClass({
 								OK<i className="material-icons right">send</i>
 							</button>
 						</div>
+						{this.state.spinner ? <Spinner overlay={true}/> : null}
 					</form>
 				</div>
 			</div>

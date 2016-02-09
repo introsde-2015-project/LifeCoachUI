@@ -16,11 +16,19 @@ var StatsView = React.createClass({
       });
     },
     render: function () {
+      var measureData = this.props.measuresData[this.state.activeMeasure];
       var measures = $.map(this.props.measureTypes, function(measureName, index) {
         return (
           <li key={index} className={this.state.activeMeasure == measureName ? "active" : null}><a onClick={this.setActiveMeasure.bind(this, measureName)}>{measureName}</a></li>
         )
       }.bind(this));
+
+      var measureView;
+      if (measureData.length > 0) {
+        measureView = <Chart data={measureData}/>
+      } else {
+        measureView = <div className="measure-view">No measures added yet.</div>
+      }
 
       return (
         <div className="statsView">
@@ -35,7 +43,7 @@ var StatsView = React.createClass({
           <ul className="pagination">
             {measures}
           </ul>
-          <Chart data={this.props.measuresData[this.state.activeMeasure]}/>
+          {measureView}
           <MeasureModal personId={this.props.personId} cbLoadData={this.props.cbLoadData} measureTypes={this.props.measureTypes}/>
         </div>
       )

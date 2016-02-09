@@ -2,7 +2,8 @@ var MeasureModal = React.createClass({
 	getInitialState: function() {
 		return {
 			measureType: "",
-			measureValue: ""
+			measureValue: "",
+			spinner: false
 		}
 	},
 	onMeasureTypeChange: function(event) {
@@ -22,26 +23,38 @@ var MeasureModal = React.createClass({
       return JSON.stringify(measure);
     },
     handleSubmit: function(event) {
-    	console.log("handleSubmit");
-    	var self = this;
 		event.preventDefault();
+    	this.setState({
+    		spinner:true
+    	}, function() {
+    		this.postMeasure();
+    	});
+    },
+    postMeasure: function() {
+    	var self = this;
     	var measure = this.createNewMeasure(this.state.measureValue);
-    	console.log(measure);
-		$.ajax({
+    	$.ajax({
 	      url:processBaseUrl+"persons/" + this.props.personId + "/" + this.state.measureType,
 	      type:"POST",
 	      data:measure,
 	      contentType:"application/json; charset=utf-8",
 	      dataType:"json",
+	      timeout: 10000,
 	      success: function(data){
-	      	console.log("success");
-	      	console.log(data);
-	      	$('#measureModal').closeModal();
-	        self.props.cbLoadData();
+	      	self.setState({
+	      		spinner: false
+	      	}, function() {
+		      	$('#measureModal').closeModal();
+		        self.props.cbLoadData();
+	      	})
 	      },
 	      fail: function() {
-	      	console.log("fail");
-	      	$('#measureModal').closeModal();
+	      	console.log("Failed to add measure");
+	      	self.setState({
+	      		spinner: false
+	      	}, function() {
+		      	$('#measureModal').closeModal();
+	      	})
 	      }
 	    })
     },
@@ -81,6 +94,7 @@ var MeasureModal = React.createClass({
 								OK<i className="material-icons right">send</i>
 							</button>
 						</div>
+						{this.state.spinner ? <Spinner overlay={true}/> : null}
 					</form>
 				</div>
 			</div>

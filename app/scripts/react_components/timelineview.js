@@ -1,15 +1,6 @@
 var TimelineView = React.createClass({
-    getInitialState: function () {  
-      return null;
-    },
     render: function () {
       var timelineData = this.props.timelineData;
-      var initTimelineData = Object.keys(timelineData).length > 0;
-      if (!initTimelineData) {
-        return (
-          <div></div>
-        )
-      }
       var timelines = $.map(timelineData, function(item, index) {
           var timelineString = item.JSONString.replace(/'/g, '"');
           var timelineObj = JSON.parse(timelineString);
@@ -47,11 +38,11 @@ var TimelineView = React.createClass({
 
       var header;
       if (timelines.length == 0) {
-        header = <h3>No actions yet. Go add your goals and daily results!</h3>
+        header = <p className="timeline-header">No actions yet. <br/>Go add your goals and daily results!</p>
       }
 
       return (
-        <div>
+        <div className="timeline">
           {header}
           {timelines}
         </div> 

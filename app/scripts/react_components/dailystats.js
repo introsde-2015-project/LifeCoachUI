@@ -11,7 +11,7 @@ var DailyStats = React.createClass({
       if (this.state.sleep != false && this.state.calories != false && this.state.steps != false) {
         setTimeout(function() {
           this.postDailyStats();
-        }.bind(this), 0);
+        }.bind(this), 10);
       }
     },
     onStatsChange: function(stat, value) {

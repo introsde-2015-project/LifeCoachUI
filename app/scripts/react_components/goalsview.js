@@ -12,6 +12,7 @@ var GoalsView = React.createClass({
           url: goalUrl,
           type: 'DELETE',
           success: function(result) {
+            self.props.cbLoadData();
           }
       });
     },
@@ -35,16 +36,10 @@ var GoalsView = React.createClass({
         );
       }, this);
 
-      return (
-        <div>
-          <nav className="sub-nav">
-            <div className="nav-wrapper">
-              <div className="brand-logo left">Your goals</div>
-              <ul className="right">
-                <li><a onClick={this.openModal} className="btn-floating waves-effect waves-light"><i className="material-icons">add</i></a></li>
-              </ul>
-            </div>
-          </nav>
+      var goalsView;
+
+      if (goalData.length > 0) {
+        goalsView = 
           <table className="bordered">
             <thead>
               <tr>
@@ -58,7 +53,22 @@ var GoalsView = React.createClass({
               {goalRows}
             </tbody>
           </table>
-          <GoalModal personId={this.props.personId} cbDataInit={this.setDataInit} goalTypes={this.props.goalTypes} cbLoadData={this.props.cbLoadData}/>
+      } else {
+        goalsView = <div className="goals-view">No goals added yet.</div>
+      }
+
+      return (
+        <div>
+          <nav className="sub-nav">
+            <div className="nav-wrapper">
+              <div className="brand-logo left">Your goals</div>
+              <ul className="right">
+                <li><a onClick={this.openModal} className="btn-floating waves-effect waves-light"><i className="material-icons">add</i></a></li>
+              </ul>
+            </div>
+          </nav>
+          {goalsView}
+          <GoalModal personId={this.props.personId} goalTypes={this.props.goalTypes} cbLoadData={this.props.cbLoadData}/>
         </div>
       );
     }
