@@ -16,6 +16,13 @@ var MeasureModal = React.createClass({
         measureValue: event.target.value
       });
     },
+    checkOnlyNumbers: function(event) {
+      if ($.inArray(event.which, [46, 8, 9, 27, 13, 110, 190]) !== -1) {
+        return;
+      } else if (event.which < 48 || event.which > 57) {
+        event.preventDefault();
+      }
+    },
     createNewMeasure: function(value) {
       var measure = {
         "value" : + value
@@ -86,7 +93,7 @@ var MeasureModal = React.createClass({
 							</select>
 						</div>
 						<div className="input-field col s12 m6 l6">
-							<input id="measureValue" placeholder="Value in numbers" type="number" className="validate" value={this.state.measureValue} onChange={this.onValueChange} required aria-required="true"/>
+							<input id="measureValue" placeholder="Value in numbers" type="number" className="validate" onKeyDown={this.checkOnlyNumbers} value={this.state.measureValue} onChange={this.onValueChange} required aria-required="true"/>
 							<label className="active" htmlFor="measureValue">Measure value</label>
 						</div>
 						<div className="col s12 modalBtnContainer">

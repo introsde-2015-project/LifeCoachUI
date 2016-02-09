@@ -292,6 +292,10 @@ var StatsForm = React.createClass({
   handleKeyDown: function handleKeyDown(event) {
     if (event.key === 'Enter') {
       this.setValue();
+    } else if ($.inArray(event.which, [46, 8, 9, 27, 13, 110, 190]) !== -1) {
+      return;
+    } else if (event.which < 48 || event.which > 57) {
+      event.preventDefault();
     }
   },
   setValue: function setValue() {
@@ -388,6 +392,13 @@ var GoalModal = React.createClass({
 			}
 		});
 	},
+	checkOnlyNumbers: function checkOnlyNumbers(event) {
+		if ($.inArray(event.which, [46, 8, 9, 27, 13, 110, 190]) !== -1) {
+			return;
+		} else if (event.which < 48 || event.which > 57) {
+			event.preventDefault();
+		}
+	},
 	closeModal: function closeModal() {
 		$('#goalModal').closeModal();
 	},
@@ -451,7 +462,7 @@ var GoalModal = React.createClass({
 					React.createElement(
 						"div",
 						{ className: "input-field col s12 m6 l6" },
-						React.createElement("input", { id: "goalValue", placeholder: "Value in numbers", type: "number", className: "validate", value: this.state.goalValue, onChange: this.onValueChange, required: true, "aria-required": "true" }),
+						React.createElement("input", { id: "goalValue", placeholder: "Value in numbers", type: "number", className: "validate", onKeyDown: this.checkOnlyNumbers, value: this.state.goalValue, onChange: this.onValueChange, required: true, "aria-required": "true" }),
 						React.createElement(
 							"label",
 							{ className: "active", htmlFor: "goalValue" },
@@ -701,6 +712,13 @@ var MeasureModal = React.createClass({
 			measureValue: event.target.value
 		});
 	},
+	checkOnlyNumbers: function checkOnlyNumbers(event) {
+		if ($.inArray(event.which, [46, 8, 9, 27, 13, 110, 190]) !== -1) {
+			return;
+		} else if (event.which < 48 || event.which > 57) {
+			event.preventDefault();
+		}
+	},
 	createNewMeasure: function createNewMeasure(value) {
 		var measure = {
 			"value": +value
@@ -806,7 +824,7 @@ var MeasureModal = React.createClass({
 					React.createElement(
 						"div",
 						{ className: "input-field col s12 m6 l6" },
-						React.createElement("input", { id: "measureValue", placeholder: "Value in numbers", type: "number", className: "validate", value: this.state.measureValue, onChange: this.onValueChange, required: true, "aria-required": "true" }),
+						React.createElement("input", { id: "measureValue", placeholder: "Value in numbers", type: "number", className: "validate", onKeyDown: this.checkOnlyNumbers, value: this.state.measureValue, onChange: this.onValueChange, required: true, "aria-required": "true" }),
 						React.createElement(
 							"label",
 							{ className: "active", htmlFor: "measureValue" },

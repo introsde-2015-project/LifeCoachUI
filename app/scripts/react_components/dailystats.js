@@ -103,6 +103,10 @@ var StatsForm = React.createClass({
     handleKeyDown: function(event) {
       if (event.key === 'Enter') {
         this.setValue();
+      } else if ($.inArray(event.which, [46, 8, 9, 27, 13, 110, 190]) !== -1) {
+        return;
+      } else if (event.which < 48 || event.which > 57) {
+        event.preventDefault();
       }
     },
     setValue: function() {

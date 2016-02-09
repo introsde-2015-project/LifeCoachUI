@@ -58,6 +58,13 @@ var GoalModal = React.createClass({
 	      }
 	    })
     },
+    checkOnlyNumbers: function(event) {
+      if ($.inArray(event.which, [46, 8, 9, 27, 13, 110, 190]) !== -1) {
+        return;
+      } else if (event.which < 48 || event.which > 57) {
+        event.preventDefault();
+      }
+    },
     closeModal: function() {
     	$('#goalModal').closeModal();
     },
@@ -86,7 +93,7 @@ var GoalModal = React.createClass({
 							</select>
 						</div>
 						<div className="input-field col s12 m6 l6">
-							<input id="goalValue" placeholder="Value in numbers" type="number" className="validate" value={this.state.goalValue} onChange={this.onValueChange} required aria-required="true"/>
+							<input id="goalValue" placeholder="Value in numbers" type="number" className="validate" onKeyDown={this.checkOnlyNumbers} value={this.state.goalValue} onChange={this.onValueChange} required aria-required="true"/>
 							<label className="active" htmlFor="goalValue">Goal value</label>
 						</div>
 						<div className="col s12 modalBtnContainer">
