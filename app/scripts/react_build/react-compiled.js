@@ -1293,11 +1293,7 @@ var Joke = React.createClass({
       React.createElement(
         "div",
         { className: "card-content" },
-        React.createElement(
-          "blockquote",
-          null,
-          joke.joke
-        )
+        React.createElement("blockquote", { dangerouslySetInnerHTML: { __html: joke.joke } })
       )
     );
   }

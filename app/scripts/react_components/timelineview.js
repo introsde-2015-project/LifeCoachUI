@@ -65,7 +65,7 @@ var Joke = React.createClass({
             {/*<i className="small material-icons right">local_dining</i>*/}
           </div>
           <div className="card-content">
-            <blockquote>{joke.joke}</blockquote>
+            <blockquote dangerouslySetInnerHTML={{ __html: joke.joke }}></blockquote>
           </div>
         </div>
       );
