@@ -97,7 +97,7 @@ var MeasureModal = React.createClass({
 							<label className="active" htmlFor="measureValue">Measure value</label>
 						</div>
 						<div className="col s12 modalBtnContainer">
-							<button className="btn waves-effect waves-light" type="submit">
+							<button disabled={this.state.spinner} className="btn waves-effect waves-light" type="submit">
 								OK<i className="material-icons right">send</i>
 							</button>
 						</div>

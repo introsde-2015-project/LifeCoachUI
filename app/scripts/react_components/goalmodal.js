@@ -40,6 +40,7 @@ var GoalModal = React.createClass({
 	      data:goal,
 	      contentType:"application/json; charset=utf-8",
 	      dataType:"json",
+	      timeout: 10000,
 	      success: function(data){
 	      	self.setState({
 	      		spinner: false
@@ -97,7 +98,7 @@ var GoalModal = React.createClass({
 							<label className="active" htmlFor="goalValue">Goal value</label>
 						</div>
 						<div className="col s12 modalBtnContainer">
-							<button className="btn waves-effect waves-light" type="submit">
+							<button disabled={this.state.spinner} className="btn waves-effect waves-light" type="submit">
 								OK<i className="material-icons right">send</i>
 							</button>
 						</div>
