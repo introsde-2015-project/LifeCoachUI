@@ -141,7 +141,7 @@ var Chart = React.createClass({
 				height: parseFloat(s.attr("height"))
 			};
 			// Only label bars where the text can fit
-			if (rect.height >= 8 && width > 29) {
+			if (rect.height >= 8 && rect.width > 27.5) {
 				// Add a text label for the value
 				svg.append("text")
 				// Position in the centre of the shape (vertical position is
@@ -1164,7 +1164,7 @@ var StatsView = React.createClass({
           React.createElement(
             'div',
             { className: 'brand-logo left' },
-            'Your current statistics'
+            'Your daily measures'
           ),
           React.createElement(
             'ul',

@@ -34,7 +34,7 @@ var StatsView = React.createClass({
         <div className="statsView">
           <nav className="sub-nav">
             <div className="nav-wrapper">
-              <div className="brand-logo left">Your current statistics</div>
+              <div className="brand-logo left">Your daily measures</div>
               <ul className="right">
                 <li><a onClick={this.openModal} className="btn-floating waves-effect waves-light"><i className="material-icons">add</i></a></li>
               </ul>
