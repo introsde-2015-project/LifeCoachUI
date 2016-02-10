@@ -22,8 +22,8 @@ var Chart = React.createClass({
 		}
 	},
 	initChart: function(data) {
-		var width = $(".tab-container").width() - 20;
-		if (width == 0) {
+		var width = $(".statsView").width();
+		if (width <= 0) {
 			return;
 		}
 		var height = width * 0.7;
@@ -35,7 +35,6 @@ var Chart = React.createClass({
 		var y = myChart.addMeasureAxis("y", "value");
 		var mySeries = myChart.addSeries(null, dimple.plot.bar);
 		mySeries.getTooltipText = function (e) {
-			console.log(e);
 			return [
 			"Date: " + e.x,
 			"Value: " + e.y
